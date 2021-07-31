@@ -76,7 +76,9 @@ _combined_val_stores = {
 }
 
 
-_flex_episodes_per_reported_config = 90
+#_flex_episodes_per_reported_config = 90
+_flex_episodes_per_reported_config = 3
+
 registry.register(ChallengeSpec(
     id='flex',
     hash='29332397efd53c29e77c4fe66405d13ae061306a',
@@ -191,4 +193,53 @@ registry.register(ChallengeSpec(
         ]
     )
 ))
+
+
+# register one challenge for each task
+for name, cfg in _bao_stores.items():
+    registry.register(ChallengeSpec(
+        id=name,
+        num_tasks=_flex_episodes_per_reported_config * 2,  # episodes x mix_or_zero_shot
+        train_stores=None,
+        val_stores=None,
+        metadatasampler=fd.MetadataSamplerCfg(
+            seed=0,
+            datasets=[
+                    fd.DatasetCfg(
+                        labeled_store=cfg(split='test'),
+                        sampler=fs.FlexTestCfg(
+                            min_way=5,
+                            max_zero_shot_episodes=_flex_episodes_per_reported_config,
+                        ),
+                        total_samples=_flex_episodes_per_reported_config * 2,
+                        name=name,
+                    )
+            ]
+        )
+    ))
+
+
+for name, cfg in {**_gao_stores, **_bansal_test_stores}.items():
+    registry.register(ChallengeSpec(
+        id=name,
+        num_tasks=_flex_episodes_per_reported_config * 2,  # episodes x mix_or_zero_shot
+        train_stores=None,
+        val_stores=None,
+        metadatasampler=fd.MetadataSamplerCfg(
+            seed=0,
+            datasets=[
+                    fd.DatasetCfg(
+                        labeled_store=cfg['store'],
+                        sampler=fs.FlexTestCfg(
+                            way=cfg['way'],
+                            max_zero_shot_episodes=_flex_episodes_per_reported_config,
+                        ),
+                        total_samples=_flex_episodes_per_reported_config * 2,
+                        name=name,
+                    )
+            ]
+        )
+    ))
+
+FLEX_TEST_TASK_NAMES = list({**_bao_stores, **_gao_stores, **_bansal_test_stores}.keys())
 
