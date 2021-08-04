@@ -77,7 +77,7 @@ _combined_val_stores = {
 
 
 #_flex_episodes_per_reported_config = 90
-_flex_episodes_per_reported_config = 3
+_flex_episodes_per_reported_config = 5
 
 registry.register(ChallengeSpec(
     id='flex',
@@ -242,4 +242,6 @@ for name, cfg in {**_gao_stores, **_bansal_test_stores}.items():
     ))
 
 FLEX_TEST_TASK_NAMES = list({**_bao_stores, **_gao_stores, **_bansal_test_stores}.keys())
+# ['newsgroup', 'reuters', 'huffpost', 'fewrel', 'amazon', 'snli', 'trec', 'mr', 'cr', 'subj', 'scitail', 'conll']
+
 
