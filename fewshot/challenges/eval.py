@@ -181,6 +181,7 @@ class Evaluator:
                     ) if x
                 ],
                 'majority_class': test['majority_class'][0] or None,
+                'test_label': test['label']
             }
             # if test['unlabeled_store_kwargs'][0]:
             #     unlabeled_dataset = Store(

@@ -117,6 +117,46 @@ registry.register(ChallengeSpec(
 ))
 
 
+_flex_20_episodes_per_reported_config = 5
+
+registry.register(ChallengeSpec(
+    id='flex20',
+    hash='29332397efd53c29e77c4fe66405d13ae061306a',
+    num_tasks=_flex_20_episodes_per_reported_config * 12 * 2,  # episodes x datasets x mix_or_zero_shot
+    train_stores=_combined_train_stores,
+    val_stores=_combined_val_stores,
+    metadatasampler=fd.MetadataSamplerCfg(
+        seed=0,
+        datasets=[
+            *[
+                fd.DatasetCfg(
+                    labeled_store=cfg(split='test'),
+                    sampler=fs.FlexTestCfg(
+                        min_way=5,
+                        max_zero_shot_episodes=_flex_20_episodes_per_reported_config,
+                    ),
+                    total_samples=_flex_20_episodes_per_reported_config * 2,
+                    name=name,
+                )
+                for name, cfg in _bao_stores.items()
+            ],
+            *[
+                fd.DatasetCfg(
+                    labeled_store=cfg['store'],
+                    sampler=fs.FlexTestCfg(
+                        way=cfg['way'],
+                        max_zero_shot_episodes=_flex_20_episodes_per_reported_config,
+                    ),
+                    total_samples=_flex_20_episodes_per_reported_config * 2,
+                    name=name,
+                )
+                for name, cfg in {**_gao_stores, **_bansal_test_stores}.items()
+            ]
+        ]
+    )
+))
+
+
 _gao_shots = (16, )
 registry.register(ChallengeSpec(
     id='gao',
@@ -240,6 +280,70 @@ for name, cfg in {**_gao_stores, **_bansal_test_stores}.items():
             ]
         )
     ))
+
+FLEX_TEST_TASK_NAMES = list({**_bao_stores, **_gao_stores, **_bansal_test_stores}.keys())
+# ['newsgroup', 'reuters', 'huffpost', 'fewrel', 'amazon', 'snli', 'trec', 'mr', 'cr', 'subj', 'scitail', 'conll']
+
+
+_flex_20_episodes_per_reported_config = 20
+# register one challenge for each task
+for name, cfg in _bao_stores.items():
+    registry.register(ChallengeSpec(
+        id=name + str(_flex_20_episodes_per_reported_config),
+        num_tasks=_flex_20_episodes_per_reported_config * 2,  # episodes x mix_or_zero_shot
+        train_stores=None,
+        val_stores=None,
+        metadatasampler=fd.MetadataSamplerCfg(
+            seed=0,
+            datasets=[
+                    fd.DatasetCfg(
+                        labeled_store=cfg(split='test'),
+                        sampler=fs.FlexTestCfg(
+                            min_way=5,
+                            max_zero_shot_episodes=_flex_20_episodes_per_reported_config,
+                        ),
+                        total_samples=_flex_20_episodes_per_reported_config * 2,
+                        name=name,
+                    )
+            ]
+        )
+    ))
+
+
+# ---------------- 16 shots ----------------------
+
+FLEX_TEST_TASK_NAMES_16_SHOTS = ['cr', 'mr', 'amazon', 'snli']
+
+_flex_episodes_per_reported_config = 5
+
+_gao_shots = (16, )
+# register one challenge for each task
+for name, cfg in {**_gao_stores, **_bansal_test_stores, **_bao_stores}.items():
+    if name not in FLEX_TEST_TASK_NAMES_16_SHOTS:
+        continue
+    registry.register(ChallengeSpec(
+        id=name + '-16shots',
+        num_tasks=_flex_episodes_per_reported_config * len(_gao_shots),  # episodes x mix_or_zero_shot
+        train_stores=None,
+        val_stores=None,
+        metadatasampler=fd.MetadataSamplerCfg(
+            seed=0,
+            datasets=[
+                    fd.DatasetCfg(
+                        labeled_store=cfg['store'] if isinstance(cfg, dict) else cfg(split='test'),
+                        sampler=fs.GaoTestCfg(
+                            way=cfg['way'] if isinstance(cfg, dict) else 5,
+                            num_support_samples=_gao_shots,
+                        ),
+                        total_samples=_flex_episodes_per_reported_config * len(_gao_shots),
+                        name=name,
+                    )
+            ]
+        )
+    ))
+
+
+
 
 FLEX_TEST_TASK_NAMES = list({**_bao_stores, **_gao_stores, **_bansal_test_stores}.keys())
 # ['newsgroup', 'reuters', 'huffpost', 'fewrel', 'amazon', 'snli', 'trec', 'mr', 'cr', 'subj', 'scitail', 'conll']

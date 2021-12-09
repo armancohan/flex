@@ -222,6 +222,7 @@ class FlexChallenge(datasets.GeneratorBasedBuilder):
                             'txt': ex.get('flex.txt', ''),
                             'dense': ex.get('flex.dense', []),
                             'sparse': ex.get('flex.sparse', {'i': [], 'd': [], 'dim': 0}),
+                            'label': str(int(query_y[i])),
                         }
                     ))
                 else:
